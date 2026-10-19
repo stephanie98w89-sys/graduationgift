@@ -40,7 +40,6 @@
             transition: background-color 0.8s ease;
         }
 
-        /* 天堂房間主題類別 */
         body.heaven-theme {
             background-color: var(--heaven-bg);
             color: var(--heaven-text);
@@ -65,7 +64,6 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.5);
         }
 
-        /* 頂部狀態列 */
         .status-bar {
             display: flex;
             justify-content: space-between;
@@ -96,7 +94,6 @@
             color: var(--heaven-accent);
         }
 
-        /* 劇情文字顯示區 */
         .story-card {
             min-height: 220px;
             background: #faf8f5;
@@ -129,7 +126,6 @@
             color: var(--heaven-accent);
         }
 
-        /* 選項按鈕區 */
         .options-container {
             display: flex;
             flex-direction: column;
@@ -180,7 +176,6 @@
             border-color: var(--accent-danger);
         }
 
-        /* 系統工具列 (存檔/圖鑑) */
         .system-bar {
             display: flex;
             justify-content: flex-end;
@@ -212,7 +207,6 @@
             color: var(--heaven-accent);
         }
 
-        /* 彈窗 Modal */
         .modal {
             display: none;
             position: fixed;
@@ -263,7 +257,6 @@
 <body>
 
     <div class="game-container">
-        <!-- 頂部狀態 -->
         <div class="status-bar">
             <div class="status-item">
                 <span>📅 距離畢業：</span>
@@ -275,16 +268,13 @@
             </div>
         </div>
 
-        <!-- 劇情展示卡片 -->
         <div class="story-card" id="story-card" onclick="forceSpeedUp()">
             <div id="speaker-name" class="speaker-name"></div>
             <div id="story-text"></div>
         </div>
 
-        <!-- 選項按鈕區 -->
         <div class="options-container" id="options-container"></div>
 
-        <!-- 系統選單按鈕 -->
         <div class="system-bar">
             <button class="btn-sys" onclick="saveGame()">💾 快速存檔</button>
             <button class="btn-sys" onclick="loadGame()">📂 讀取存檔</button>
@@ -292,7 +282,6 @@
         </div>
     </div>
 
-    <!-- 圖鑑 Modal -->
     <div class="modal" id="gallery-modal">
         <div class="modal-content">
             <div class="modal-title">📖 結局與輪迴圖鑑</div>
@@ -302,14 +291,11 @@
     </div>
 
     <script>
-        // -------------------------------------------------------------
-        // 遊戲狀態 (GameState)
-        // -------------------------------------------------------------
         let gameState = {
             daysLeft: 60,
             albumProgress: 0,
             currentNode: 'start',
-            savedDateUnlocked: ['day_60'], // 已解鎖的時間點
+            savedDateUnlocked: ['day_60'],
             unlockedEndings: [],
             flags: {
                 boughtDonuts: false,
@@ -319,24 +305,35 @@
             }
         };
 
-        // 打字機控制變數
         let isTyping = false;
         let typeTimer = null;
         let currentFullText = "";
 
-        // -------------------------------------------------------------
-        // 劇本資料結構 (Script Database)
-        // -------------------------------------------------------------
+        function resetGameState() {
+            document.body.classList.remove('heaven-theme');
+            gameState.daysLeft = 60;
+            gameState.albumProgress = 0;
+            gameState.currentNode = 'start';
+            gameState.flags = {
+                boughtDonuts: false,
+                visitedZhe: false,
+                invitedChen: false,
+                friendsSaved: { ahQing: false, xiaoZhe: false, ahChen: false }
+            };
+        }
+
         const storyData = {
             'start': {
                 speaker: '',
                 text: '距離高中畢業典禮只剩下最後兩個月。\n黑板右側的倒數數字每天都在遞減，放學後的教室裡充滿了補習班講義與整理背包的聲音。\n\n我想在畢業那天，送給阿晴、小哲、阿辰一份特別的禮物——一本紀錄我們這三年點滴的純手作相冊。',
+                onEnter: () => {
+                    resetGameState();
+                },
                 options: [
                     { text: '（繼續）', target: 'day_60_afterschool' }
                 ]
             },
 
-            // ------------------ 倒數 60 天 (第 8 週) ------------------
             'day_60_afterschool': {
                 speaker: '放學後的校門口',
                 text: '「好餓喔——今天補習前一定要先去吃點什麼！」阿晴一邊背起笨重的書包，一邊揉著肚子喊道。\n\n旁邊的小哲扶了扶眼鏡，冷冷補了一句：「你上次這樣講，結果補習遲到了整整二十分鐘。」\n阿辰則是在旁邊默默畫著塗鴉，笑而不語。\n\n今天是開始籌備手作相冊的第一天，我順路想去手工藝材料店買相冊皮革紙。',
@@ -347,7 +344,6 @@
                 ]
             },
 
-            // 分歧 A：買甜甜圈 (成功避開車禍事故)
             'opt_donuts': {
                 speaker: '甜甜圈店門口',
                 text: '「太棒了！我就知道你最好了！」阿晴興奮地跑進甜甜圈店。\n因為排隊買草莓甜甜圈，我們在店裡耽擱了 10 分鐘。\n\n走到大路口時，只見前方剛好發生了一起嚴重的貨車衝撞事故，警車與救護車笛聲大作。\n阿晴咬著甜甜圈嚇了一跳：「哇……如果剛才沒有買甜甜圈，我們這時候剛好走過那個十字路口吧……」\n\n【相冊材料：獲得甜甜圈包裝紙作為裝飾 (相冊 +20%)】',
@@ -361,7 +357,6 @@
                 ]
             },
 
-            // 分歧 B：直接去材料店 (阿晴遭遇事故)
             'opt_direct_material': {
                 speaker: '材料店與補習班路上',
                 text: '我和阿晴在校門口道別。\n十分鐘後，當我買完皮革紙出來時，遠處傳來了刺耳的救護車聲。\n\n手機突然劇烈震動，是小哲打來的，語氣帶著發抖的慌亂：\n「……阿晴在補習班前的十字路口被車撞了。搶救無效……」',
@@ -371,19 +366,18 @@
                 ]
             },
 
-            // 分歧 C：提議去小哲家 (激化小哲家庭矛盾)
             'opt_zhe_house': {
                 speaker: '小哲家客廳',
                 text: '我們一行人去了小哲家。小哲的媽媽看到我們，臉色頓時沉了下來：\n「哲宇，還有一個月就要面試了，你還有空帶朋友回來玩？」\n小哲低著頭沒說話，手緊緊握成拳頭，眼神裡最後的光芒似乎熄滅了。\n\n隔天，小哲沒有來上學，據說他在家中撕毀了所有升學資料，徹底與家裡斷絕關係失聯了。',
                 onEnter: () => {
                     gameState.flags.visitedZhe = true;
+                    gameState.flags.friendsSaved.xiaoZhe = false;
                 },
                 options: [
                     { text: '（時間流逝至倒數 30 天）', target: 'day_30_check' }
                 ]
             },
 
-            // ------------------ 倒數 30 天 (第 4 週) ------------------
             'day_30_check': {
                 speaker: '倒數 30 天',
                 text: '距離畢業只剩下一個月了。\n這段時間，大家各自承受著升學與未來的沉重壓力。',
@@ -423,37 +417,43 @@
             'opt_ignore_chen': {
                 speaker: '幾天後的學校',
                 text: '阿辰無精打采地收拾了畫具。\n一週後，阿辰辦理了退學手續，悄無聲息地離開了這座城市，再也聯絡不上了。',
+                onEnter: () => {
+                    gameState.flags.invitedChen = false;
+                    gameState.flags.friendsSaved.ahChen = false;
+                },
                 options: [
                     { text: '（時間流逝至倒數 1 天）', target: 'day_1_check' }
                 ]
             },
 
-            // ------------------ 倒數 1 天 / 結局判定 ------------------
             'day_1_check': {
                 speaker: '畢業典禮前夕',
-                text: '明天就是畢業典禮了。這兩個月發生的種種，像是一場長長的夢……',
+                text: '明天就是畢業典禮了。這兩個月發生的種種，像是一場長長的抉擇……\n無論結果如何，這一天終究還是到來了。',
                 onEnter: () => {
                     gameState.daysLeft = 1;
                 },
                 options: [
-                    { text: '迎接畢業典禮當天', target: 'judge_ending' }
+                    { text: '前往畢業典禮現場', target: 'judge_ending' }
                 ]
             },
 
             'judge_ending': {
-                speaker: '畢業典禮當天',
-                text: '',
-                onEnter: () => {
-                    const saved = gameState.flags.friendsSaved;
-                    if (saved.ahQing && saved.ahChen && gameState.albumProgress >= 50) {
-                        // 邁向成功路線
-                        jumpToNode('true_ending');
-                    } else {
-                        // 朋友全滅 / 絕望結局
-                        jumpToNode('friends_collapsed_ending');
+                speaker: '畢業典禮現場',
+                text: '校園裡飄著櫻花與離別的氣息，廣播裡放著畢業歌曲。\n我懷裡抱著那本籌備已久的手作相冊，深吸了一口氣，望向熟悉的禮堂入口……',
+                options: [
+                    { 
+                        text: '查看大家的相聚情況', 
+                        action: () => {
+                            const saved = gameState.flags.friendsSaved;
+                            // 必須同時成功救下阿晴與阿辰才算真結局
+                            if (saved.ahQing === true && saved.ahChen === true && gameState.albumProgress >= 50) {
+                                jumpToNode('true_ending');
+                            } else {
+                                jumpToNode('friends_collapsed_ending');
+                            }
+                        }
                     }
-                },
-                options: []
+                ]
             },
 
             'true_ending': {
@@ -478,7 +478,6 @@
                 ]
             },
 
-            // ------------------ 天堂房間 (Heaven's Room) ------------------
             'heaven_room_accident': {
                 speaker: '天使 (天堂事故補償處)',
                 text: '「唉呀呀，真是一起不幸的意外呢。」\n睜開眼，周圍是一片寂靜的冷色調房間。一位穿著白袍的天使正翻著手中的工作日誌。\n\n「因為這次事故屬於蝴蝶效應造成的意外連鎖，所以我可以為你開啟時間倒回的權限喔。」\n天使微笑著看著你：「這次要幫你把時間倒回哪一天呢？」',
@@ -530,10 +529,9 @@
                 ]
             },
 
-            // ------------------ 懲罰：無意義尋死 ------------------
             'bad_end_suicide': {
                 speaker: 'SYSTEM',
-                text: '【GAME OVER】\n天使拒絕回應無意義的自我放棄。\n逃避無法解決任何問題，請重新載入存檔或重頭來過。',
+                text: '【GAME OVER】\n天使拒絕回應無意義的自我放棄。\n逃避無法解決任何問題，請重新開始遊戲或讀取舊存檔。',
                 onEnter: () => {
                     unlockEnding('GAME OVER：逃避者的終局');
                 },
@@ -543,34 +541,25 @@
             }
         };
 
-        // -------------------------------------------------------------
-        // 渲染與打字邏輯 (UI & Rendering)
-        // -------------------------------------------------------------
         function renderNode(nodeKey) {
             const node = storyData[nodeKey];
             if (!node) return;
 
             gameState.currentNode = nodeKey;
 
-            // 觸發節點進入 Hook
             if (node.onEnter) {
                 node.onEnter();
             }
 
-            // 更新頂部 UI 狀態
             document.getElementById('days-display').innerText = gameState.daysLeft + " 天";
             document.getElementById('album-display').innerText = gameState.albumProgress + "%";
 
-            // 設置說話者
             document.getElementById('speaker-name').innerText = node.speaker || '';
 
-            // 清空舊選項與打字狀態
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
             
-            // 開始逐字效果
             startTyping(node.text, () => {
-                // 打字完成後顯示選項
                 renderOptions(node.options);
             });
         }
@@ -615,14 +604,20 @@
             if (!options) return;
 
             options.forEach(opt => {
-                // 檢查顯示條件 (例如時間點解鎖)
                 if (opt.condition && !opt.condition()) return;
 
                 const btn = document.createElement('button');
                 btn.className = 'btn';
                 if (opt.target === 'bad_end_suicide') btn.classList.add('btn-danger');
                 btn.innerText = opt.text;
-                btn.onclick = () => jumpToNode(opt.target);
+                
+                // 支援直接執行動態函數 action 或轉向 target
+                if (opt.action) {
+                    btn.onclick = opt.action;
+                } else {
+                    btn.onclick = () => jumpToNode(opt.target);
+                }
+                
                 container.appendChild(btn);
             });
         }
@@ -631,9 +626,6 @@
             renderNode(targetKey);
         }
 
-        // -------------------------------------------------------------
-        // 存檔/讀檔/圖鑑系統 (System Tools)
-        // -------------------------------------------------------------
         function saveGame() {
             localStorage.setItem('graduation_save', JSON.stringify(gameState));
             alert('💾 遊戲進度已成功儲存！');
@@ -678,7 +670,6 @@
             document.getElementById('gallery-modal').style.display = 'none';
         }
 
-        // 啟動遊戲
         window.onload = () => {
             renderNode('start');
         };

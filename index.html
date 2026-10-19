@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尚未送達的畢業禮物</title>
+    <style>
+        :root {
+            --bg-color: #f5f3ef;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --accent-color: #7b8b6f;
+            --accent-hover: #5d6d52;
+            --accent-danger: #a95a5a;
+            --heaven-bg: #1c2321;
+            --heaven-card: #2b3531;
+            --heaven-text: #e0e6e4;
+            --heaven-accent: #88beac;
+            --border-radius: 12px;
+            --shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', -apple-system, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.8s ease;
+        }
+
+        /* 天堂房間主題類別 */
+        body.heaven-theme {
+            background-color: var(--heaven-bg);
+            color: var(--heaven-text);
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 720px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            transition: background 0.8s ease, color 0.8s ease;
+        }
+
+        body.heaven-theme .game-container {
+            background: var(--heaven-card);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+
+        /* 頂部狀態列 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #eae6df;
+            font-size: 0.95rem;
+            color: var(--text-sub);
+        }
+
+        body.heaven-theme .status-bar {
+            border-bottom-color: #3f4e48;
+            color: #9cb0a8;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        body.heaven-theme .status-value {
+            color: var(--heaven-accent);
+        }
+
+        /* 劇情文字顯示區 */
+        .story-card {
+            min-height: 220px;
+            background: #faf8f5;
+            border-radius: 8px;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+            white-space: pre-line;
+            cursor: pointer;
+            position: relative;
+            overflow-y: auto;
+            max-height: 320px;
+            border: 1px solid #eee9e0;
+        }
+
+        body.heaven-theme .story-card {
+            background: #232c29;
+            border-color: #384641;
+        }
+
+        .speaker-name {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        body.heaven-theme .speaker-name {
+            color: var(--heaven-accent);
+        }
+
+        /* 選項按鈕區 */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            background: #f0ece1;
+            color: var(--text-main);
+            border: 1px solid #e2dcd0;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        body.heaven-theme .btn {
+            background: #34423d;
+            color: var(--heaven-text);
+            border-color: #455751;
+        }
+
+        body.heaven-theme .btn:hover {
+            background: var(--heaven-accent);
+            color: #1c2321;
+            border-color: var(--heaven-accent);
+        }
+
+        .btn-danger {
+            background: #fdf0f0;
+            border-color: #f5c6c6;
+            color: var(--accent-danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--accent-danger);
+            color: white;
+            border-color: var(--accent-danger);
+        }
+
+        /* 系統工具列 (存檔/圖鑑) */
+        .system-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2dcd0;
+        }
+
+        body.heaven-theme .system-bar {
+            border-top-color: #3f4e48;
+        }
+
+        .btn-sys {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            text-decoration: underline;
+        }
+
+        .btn-sys:hover {
+            color: var(--accent-color);
+        }
+
+        body.heaven-theme .btn-sys:hover {
+            color: var(--heaven-accent);
+        }
+
+        /* 彈窗 Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 480px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        body.heaven-theme .modal-content {
+            background: var(--heaven-card);
+            color: var(--heaven-text);
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .modal-close {
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        .log-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        body.heaven-theme .log-item {
+            border-bottom-color: #3f4e48;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- 頂部狀態 -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span>📅 距離畢業：</span>
+                <span id="days-display" class="status-value">60 天</span>
+            </div>
+            <div class="status-item">
+                <span>🎁 手作相冊進度：</span>
+                <span id="album-display" class="status-value">0%</span>
+            </div>
+        </div>
+
+        <!-- 劇情展示卡片 -->
+        <div class="story-card" id="story-card" onclick="forceSpeedUp()">
+            <div id="speaker-name" class="speaker-name"></div>
+            <div id="story-text"></div>
+        </div>
+
+        <!-- 選項按鈕區 -->
+        <div class="options-container" id="options-container"></div>
+
+        <!-- 系統選單按鈕 -->
+        <div class="system-bar">
+            <button class="btn-sys" onclick="saveGame()">💾 快速存檔</button>
+            <button class="btn-sys" onclick="loadGame()">📂 讀取存檔</button>
+            <button class="btn-sys" onclick="showGallery()">📖 解鎖圖鑑</button>
+        </div>
+    </div>
+
+    <!-- 圖鑑 Modal -->
+    <div class="modal" id="gallery-modal">
+        <div class="modal-content">
+            <div class="modal-title">📖 結局與輪迴圖鑑</div>
+            <div id="gallery-list"></div>
+            <button class="btn modal-close" onclick="closeGallery()">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        // -------------------------------------------------------------
+        // 遊戲狀態 (GameState)
+        // -------------------------------------------------------------
+        let gameState = {
+            daysLeft: 60,
+            albumProgress: 0,
+            currentNode: 'start',
+            savedDateUnlocked: ['day_60'], // 已解鎖的時間點
+            unlockedEndings: [],
+            flags: {
+                boughtDonuts: false,
+                visitedZhe: false,
+                invitedChen: false,
+                friendsSaved: { ahQing: false, xiaoZhe: false, ahChen: false }
+            }
+        };
+
+        // 打字機控制變數
+        let isTyping = false;
+        let typeTimer = null;
+        let currentFullText = "";
+
+        // -------------------------------------------------------------
+        // 劇本資料結構 (Script Database)
+        // -------------------------------------------------------------
+        const storyData = {
+            'start': {
+                speaker: '',
+                text: '距離高中畢業典禮只剩下最後兩個月。\n黑板右側的倒數數字每天都在遞減，放學後的教室裡充滿了補習班講義與整理背包的聲音。\n\n我想在畢業那天，送給阿晴、小哲、阿辰一份特別的禮物——一本紀錄我們這三年點滴的純手作相冊。',
+                options: [
+                    { text: '（繼續）', target: 'day_60_afterschool' }
+                ]
+            },
+
+            // ------------------ 倒數 60 天 (第 8 週) ------------------
+            'day_60_afterschool': {
+                speaker: '放學後的校門口',
+                text: '「好餓喔——今天補習前一定要先去吃點什麼！」阿晴一邊背起笨重的書包，一邊揉著肚子喊道。\n\n旁邊的小哲扶了扶眼鏡，冷冷補了一句：「你上次這樣講，結果補習遲到了整整二十分鐘。」\n阿辰則是在旁邊默默畫著塗鴉，笑而不語。\n\n今天是開始籌備手作相冊的第一天，我順路想去手工藝材料店買相冊皮革紙。',
+                options: [
+                    { text: '順路拉阿晴去甜甜圈店（耽擱 10 分鐘，再去材料店）', target: 'opt_donuts' },
+                    { text: '直接去材料店，讓阿晴自己先去補習班', target: 'opt_direct_material' },
+                    { text: '提議去小哲家一起讀書準備面試', target: 'opt_zhe_house' }
+                ]
+            },
+
+            // 分歧 A：買甜甜圈 (成功避開車禍事故)
+            'opt_donuts': {
+                speaker: '甜甜圈店門口',
+                text: '「太棒了！我就知道你最好了！」阿晴興奮地跑進甜甜圈店。\n因為排隊買草莓甜甜圈，我們在店裡耽擱了 10 分鐘。\n\n走到大路口時，只見前方剛好發生了一起嚴重的貨車衝撞事故，警車與救護車笛聲大作。\n阿晴咬著甜甜圈嚇了一跳：「哇……如果剛才沒有買甜甜圈，我們這時候剛好走過那個十字路口吧……」\n\n【相冊材料：獲得甜甜圈包裝紙作為裝飾 (相冊 +20%)】',
+                onEnter: () => {
+                    gameState.flags.boughtDonuts = true;
+                    gameState.flags.friendsSaved.ahQing = true;
+                    gameState.albumProgress += 20;
+                },
+                options: [
+                    { text: '（時間流逝至倒數 30 天）', target: 'day_30_check' }
+                ]
+            },
+
+            // 分歧 B：直接去材料店 (阿晴遭遇事故)
+            'opt_direct_material': {
+                speaker: '材料店與補習班路上',
+                text: '我和阿晴在校門口道別。\n十分鐘後，當我買完皮革紙出來時，遠處傳來了刺耳的救護車聲。\n\n手機突然劇烈震動，是小哲打來的，語氣帶著發抖的慌亂：\n「……阿晴在補習班前的十字路口被車撞了。搶救無效……」',
+                options: [
+                    { text: '無法承受這突如其來的打擊，衝向馬路……（尋死）', target: 'bad_end_suicide' },
+                    { text: '在強烈的自責與恍惚中跌倒撞擊頭部……', target: 'heaven_room_accident' }
+                ]
+            },
+
+            // 分歧 C：提議去小哲家 (激化小哲家庭矛盾)
+            'opt_zhe_house': {
+                speaker: '小哲家客廳',
+                text: '我們一行人去了小哲家。小哲的媽媽看到我們，臉色頓時沉了下來：\n「哲宇，還有一個月就要面試了，你還有空帶朋友回來玩？」\n小哲低著頭沒說話，手緊緊握成拳頭，眼神裡最後的光芒似乎熄滅了。\n\n隔天，小哲沒有來上學，據說他在家中撕毀了所有升學資料，徹底與家裡斷絕關係失聯了。',
+                onEnter: () => {
+                    gameState.flags.visitedZhe = true;
+                },
+                options: [
+                    { text: '（時間流逝至倒數 30 天）', target: 'day_30_check' }
+                ]
+            },
+
+            // ------------------ 倒數 30 天 (第 4 週) ------------------
+            'day_30_check': {
+                speaker: '倒數 30 天',
+                text: '距離畢業只剩下一個月了。\n這段時間，大家各自承受著升學與未來的沉重壓力。',
+                onEnter: () => {
+                    gameState.daysLeft = 30;
+                    if (!gameState.savedDateUnlocked.includes('day_30')) {
+                        gameState.savedDateUnlocked.push('day_30');
+                    }
+                },
+                options: [
+                    { text: '（觀察大家的狀態）', target: 'day_30_events' }
+                ]
+            },
+
+            'day_30_events': {
+                speaker: '放學後的畫室',
+                text: '阿辰最近總是獨自待在美術教室裡，看著畫板發呆。\n他的參賽作品被評審否決了，家裡也一直逼他放棄藝術去報考普通大學。\n「我覺得……我畫的東西好像一點價值也沒有。」阿辰低著頭小聲說。',
+                options: [
+                    { text: '邀請阿辰幫忙繪製手作相冊的封面插畫', target: 'opt_invite_chen' },
+                    { text: '安慰他幾句，讓他自己靜一靜', target: 'opt_ignore_chen' }
+                ]
+            },
+
+            'opt_invite_chen': {
+                speaker: '畫室',
+                text: '「相冊的封面……需要我來畫嗎？」阿辰眼睛一亮。\n「當然，這本相冊如果沒有你的畫，就完全不算完整了！」\n阿辰重重地下點頭，眼裡重新燃起了自信的光芒。\n\n【相冊進度：阿辰開始繪製封面 (相冊 +30%)】',
+                onEnter: () => {
+                    gameState.flags.invitedChen = true;
+                    gameState.flags.friendsSaved.ahChen = true;
+                    gameState.albumProgress += 30;
+                },
+                options: [
+                    { text: '（時間流逝至倒數 1 天）', target: 'day_1_check' }
+                ]
+            },
+
+            'opt_ignore_chen': {
+                speaker: '幾天後的學校',
+                text: '阿辰無精打采地收拾了畫具。\n一週後，阿辰辦理了退學手續，悄無聲息地離開了這座城市，再也聯絡不上了。',
+                options: [
+                    { text: '（時間流逝至倒數 1 天）', target: 'day_1_check' }
+                ]
+            },
+
+            // ------------------ 倒數 1 天 / 結局判定 ------------------
+            'day_1_check': {
+                speaker: '畢業典禮前夕',
+                text: '明天就是畢業典禮了。這兩個月發生的種種，像是一場長長的夢……',
+                onEnter: () => {
+                    gameState.daysLeft = 1;
+                },
+                options: [
+                    { text: '迎接畢業典禮當天', target: 'judge_ending' }
+                ]
+            },
+
+            'judge_ending': {
+                speaker: '畢業典禮當天',
+                text: '',
+                onEnter: () => {
+                    const saved = gameState.flags.friendsSaved;
+                    if (saved.ahQing && saved.ahChen && gameState.albumProgress >= 50) {
+                        // 邁向成功路線
+                        jumpToNode('true_ending');
+                    } else {
+                        // 朋友全滅 / 絕望結局
+                        jumpToNode('friends_collapsed_ending');
+                    }
+                },
+                options: []
+            },
+
+            'true_ending': {
+                speaker: '禮堂外的櫻花樹下',
+                text: '畢業典禮結束後，我們四個人齊聚在樹下。\n阿晴抱著一大包紀念甜甜圈嚷著要拍照，小哲笑著拿出錄取通知書，阿辰則指著相冊上精美的封面驕傲不已。\n\n我把完成的手作相冊翻開，裡面貼滿了這兩個月來的所有照片與記憶。\n「謝謝你們，能遇見你們真的太好了。」\n\n【TRUE END：尚未送達的禮物，終於親手送達】',
+                onEnter: () => {
+                    unlockEnding('TRUE END：尚未送達的禮物，終於親手送達');
+                },
+                options: [
+                    { text: '重新體驗遊戲', target: 'start' }
+                ]
+            },
+
+            'friends_collapsed_ending': {
+                speaker: '空無一人的教室',
+                text: '畢業典禮結束了，但身邊的位置卻空空如也。\n有人離去、有人崩潰失聯、有人再也無法回來。\n我抱著未完成的手作相冊，坐在冷冰冰的課桌前，絕望湧上心頭……\n「如果……如果能重來一次的話，我一定會拯救大家……」\n\n我閉上眼睛，選擇了徹底放棄自己。',
+                onEnter: () => {
+                    unlockEnding('BAD END：散落的畢業相冊');
+                },
+                options: [
+                    { text: '（意識漸漸陷入沉睡……）', target: 'heaven_room_heartbreak' }
+                ]
+            },
+
+            // ------------------ 天堂房間 (Heaven's Room) ------------------
+            'heaven_room_accident': {
+                speaker: '天使 (天堂事故補償處)',
+                text: '「唉呀呀，真是一起不幸的意外呢。」\n睜開眼，周圍是一片寂靜的冷色調房間。一位穿著白袍的天使正翻著手中的工作日誌。\n\n「因為這次事故屬於蝴蝶效應造成的意外連鎖，所以我可以為你開啟時間倒回的權限喔。」\n天使微笑著看著你：「這次要幫你把時間倒回哪一天呢？」',
+                onEnter: () => {
+                    document.body.classList.add('heaven-theme');
+                    unlockEnding('HEAVEN：意外事故補償天堂');
+                },
+                options: [
+                    { text: '倒回 倒數 60 天 (第 8 週)', target: 'loop_reset_60' },
+                    { text: '倒回 倒數 30 天 (第 4 週)', target: 'loop_reset_30', condition: () => gameState.savedDateUnlocked.includes('day_30') }
+                ]
+            },
+
+            'heaven_room_heartbreak': {
+                speaker: '天使 (心軟的干預者)',
+                text: '「本來因為絕望自毀是不能來到這裡的……」\n天使無奈地嘆了口氣，合上了手中的日誌。\n「但看在你那麼珍惜那群朋友、那麼想拯救大家的份上，我就破例心軟這一次吧。」\n\n「拿好你的勇氣與記憶，這次可別再放棄自己了！」',
+                onEnter: () => {
+                    document.body.classList.add('heaven-theme');
+                    unlockEnding('HEAVEN：天使的破例救贖');
+                },
+                options: [
+                    { text: '倒回 倒數 60 天 (第 8 週)', target: 'loop_reset_60' },
+                    { text: '倒回 倒數 30 天 (第 4 週)', target: 'loop_reset_30', condition: () => gameState.savedDateUnlocked.includes('day_30') }
+                ]
+            },
+
+            'loop_reset_60': {
+                speaker: '時間倒回',
+                text: '指針開始倒轉，周圍的冷色調逐漸退去，熟悉的喧囂聲再次回到耳邊……',
+                onEnter: () => {
+                    document.body.classList.remove('heaven-theme');
+                    gameState.daysLeft = 60;
+                    gameState.flags.friendsSaved = { ahQing: false, xiaoZhe: false, ahChen: false };
+                },
+                options: [
+                    { text: '回到倒數 60 天', target: 'day_60_afterschool' }
+                ]
+            },
+
+            'loop_reset_30': {
+                speaker: '時間倒回',
+                text: '時間跳躍至倒數 30 天……第二次機會，這次一定要抓住！',
+                onEnter: () => {
+                    document.body.classList.remove('heaven-theme');
+                    gameState.daysLeft = 30;
+                },
+                options: [
+                    { text: '回到倒數 30 天', target: 'day_30_events' }
+                ]
+            },
+
+            // ------------------ 懲罰：無意義尋死 ------------------
+            'bad_end_suicide': {
+                speaker: 'SYSTEM',
+                text: '【GAME OVER】\n天使拒絕回應無意義的自我放棄。\n逃避無法解決任何問題，請重新載入存檔或重頭來過。',
+                onEnter: () => {
+                    unlockEnding('GAME OVER：逃避者的終局');
+                },
+                options: [
+                    { text: '重新開始遊戲', target: 'start' }
+                ]
+            }
+        };
+
+        // -------------------------------------------------------------
+        // 渲染與打字邏輯 (UI & Rendering)
+        // -------------------------------------------------------------
+        function renderNode(nodeKey) {
+            const node = storyData[nodeKey];
+            if (!node) return;
+
+            gameState.currentNode = nodeKey;
+
+            // 觸發節點進入 Hook
+            if (node.onEnter) {
+                node.onEnter();
+            }
+
+            // 更新頂部 UI 狀態
+            document.getElementById('days-display').innerText = gameState.daysLeft + " 天";
+            document.getElementById('album-display').innerText = gameState.albumProgress + "%";
+
+            // 設置說話者
+            document.getElementById('speaker-name').innerText = node.speaker || '';
+
+            // 清空舊選項與打字狀態
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            // 開始逐字效果
+            startTyping(node.text, () => {
+                // 打字完成後顯示選項
+                renderOptions(node.options);
+            });
+        }
+
+        function startTyping(text, onComplete) {
+            isTyping = true;
+            currentFullText = text;
+            const textElem = document.getElementById('story-text');
+            textElem.innerText = '';
+            let index = 0;
+
+            if (typeTimer) clearInterval(typeTimer);
+
+            typeTimer = setInterval(() => {
+                if (index < text.length) {
+                    textElem.innerText += text.charAt(index);
+                    index++;
+                } else {
+                    clearInterval(typeTimer);
+                    isTyping = false;
+                    if (onComplete) onComplete();
+                }
+            }, 30);
+        }
+
+        function forceSpeedUp() {
+            if (isTyping) {
+                clearInterval(typeTimer);
+                isTyping = false;
+                document.getElementById('story-text').innerText = currentFullText;
+                const node = storyData[gameState.currentNode];
+                if (node && node.options) {
+                    renderOptions(node.options);
+                }
+            }
+        }
+
+        function renderOptions(options) {
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            if (!options) return;
+
+            options.forEach(opt => {
+                // 檢查顯示條件 (例如時間點解鎖)
+                if (opt.condition && !opt.condition()) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                if (opt.target === 'bad_end_suicide') btn.classList.add('btn-danger');
+                btn.innerText = opt.text;
+                btn.onclick = () => jumpToNode(opt.target);
+                container.appendChild(btn);
+            });
+        }
+
+        function jumpToNode(targetKey) {
+            renderNode(targetKey);
+        }
+
+        // -------------------------------------------------------------
+        // 存檔/讀檔/圖鑑系統 (System Tools)
+        // -------------------------------------------------------------
+        function saveGame() {
+            localStorage.setItem('graduation_save', JSON.stringify(gameState));
+            alert('💾 遊戲進度已成功儲存！');
+        }
+
+        function loadGame() {
+            const data = localStorage.getItem('graduation_save');
+            if (data) {
+                gameState = JSON.parse(data);
+                renderNode(gameState.currentNode);
+                alert('📂 已讀取上次儲存的進度！');
+            } else {
+                alert('⚠️ 尚無存檔紀錄！');
+            }
+        }
+
+        function unlockEnding(title) {
+            if (!gameState.unlockedEndings.includes(title)) {
+                gameState.unlockedEndings.push(title);
+            }
+        }
+
+        function showGallery() {
+            const list = document.getElementById('gallery-list');
+            list.innerHTML = '';
+
+            if (gameState.unlockedEndings.length === 0) {
+                list.innerHTML = '<div class="log-item">尚未解鎖任何特殊結局或圖鑑。</div>';
+            } else {
+                gameState.unlockedEndings.forEach(end => {
+                    const div = document.createElement('div');
+                    div.className = 'log-item';
+                    div.innerText = '🏆 ' + end;
+                    list.appendChild(div);
+                });
+            }
+
+            document.getElementById('gallery-modal').style.display = 'flex';
+        }
+
+        function closeGallery() {
+            document.getElementById('gallery-modal').style.display = 'none';
+        }
+
+        // 啟動遊戲
+        window.onload = () => {
+            renderNode('start');
+        };
+    </script>
+</body>
+</html>
